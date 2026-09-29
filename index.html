@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>I LOVE YOU</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      touch-action: none; /* Mencegah layar HP goyang saat di-zoom */
+    }
+
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #canvas-container:active {
+      cursor: grabbing;
+    }
+
+    canvas {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      display: block;
+      transform-origin: center center;
+    }
+  </style>
+  <!-- Library Panzoom untuk Zoom Tanpa Batas & Sangat Halus -->
+  <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+</head>
+<body>
+
+  <div id="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const textToRepeat = "ILOVEYOU "; 
+    
+    const img = new Image();
+    img.src = 'pacar.jpg'; // Pastikan nama file sesuai
+
+    img.onload = function() {
+      let textIndex = 0;
+
+      // Pakai ukuran asli gambar agar tajam saat di-zoom tajam
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Render sementara
+      ctx.drawImage(img, 0, 0);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imgData.data;
+
+      // Background Hitam
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Ukuran Font Teks
+      const fontSize = Math.max(8, Math.floor(canvas.width / 120)); 
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.textBaseline = 'top';
+
+      // Susun Tulisan ILOVEYOU
+      for (let y = 0; y < canvas.height; y += fontSize * 0.85) {
+        for (let x = 0; x < canvas.width; x += fontSize * 0.6) {
+          const pixelX = Math.floor(x);
+          const pixelY = Math.floor(y);
+          const index = (pixelY * canvas.width + pixelX) * 4;
+
+          const r = pixels[index];
+          const g = pixels[index + 1];
+          const b = pixels[index + 2];
+          const brightness = (r + g + b) / 3;
+
+          const char = textToRepeat[textIndex % textToRepeat.length];
+          textIndex++;
+
+          ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${brightness})`;
+          ctx.fillText(char, x, y);
+        }
+      }
+
+      // Aktifkan Fitur Zoom Berkecepatan Tinggi & Bebas Geser
+      const panzoom = Panzoom(canvas, {
+        maxScale: 50, // Batas maksimal zoom (bisa sampai 50x lipat)
+        minScale: 0.2,
+        contain: 'outside'
+      });
+
+      // Fitur Zoom Pakai Scroll Mouse di PC
+      const container = document.getElementById('canvas-container');
+      container.addEventListener('wheel', panzoom.zoomWithWheel);
+    };
+  </script>
+</body>
+</html>
